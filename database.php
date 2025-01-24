@@ -4,44 +4,40 @@ class DB
 {
     private $db;
 
-    public function __construct()
+    public function __construct($config)
     {
-        $this->db = new PDO('sqlite:database.sqlite');
+        $this->db = new PDO($this->getDsn($config));
     }
+
+    private function getDsn($config)
+    {
+        $driver = $config['driver'];
+        unset($config['driver']);
+
+        $dsn = $driver . ':' . http_build_query($config, '', ';');
+
+
+        if ($driver == 'sqlite') {
+            $dsn = $driver . ':' . $config['database'];
+        }
+
+        return $dsn;
+    }
+
     //@return array[Livro]
 
     // Retorna todos os livros no banco de dados
 
-    public function livros($pesquisa = '')
-
+    public function query($query, $class = null, $params = [])
     {
-        $prepare = $this->db->prepare("select * from livros where usuario_id = 1 and titulo like :pesquisa");
-        $prepare->bindValue(':pesquisa', "%$pesquisa%");
-        $prepare->execute();
-        $items = $prepare->fetchAll();
-
-        $retorno = [];
-
-        foreach ($items as $item) {
-            $retorno[] = Livro::make($item);
+        $prepare = $this->db->prepare($query);
+        if ($class) {
+            $prepare->setFetchMode(PDO::FETCH_CLASS, $class);
         }
+        $prepare->execute($params);
 
-        return $retorno;
-    }
-
-
-
-    public function livro($id)
-    {
-        $sql = "select * from livros where id = " . $id;
-        $query = $this->db->query($sql);
-        $items = $query->fetchAll();
-        $retorno = [];
-
-        foreach ($items as $item) {
-            $retorno[] = Livro::make($item);
-        }
-
-        return $retorno[0];
+        return $prepare;
     }
 }
+
+$database = new DB($config['database']);
