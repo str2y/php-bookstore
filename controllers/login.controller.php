@@ -1,15 +1,27 @@
 <?php
+$mensagem = $_REQUEST['mensagem'] ?? '';
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $resultado = $database->query(
-        "insert into usuarios ( nome, email, senha ) values ( :nome, :email, :senha )",
-        Livro::class,
-        [
-            'nome' => $_POST['nome'],
-            'email' => $_POST['email'],
-            'senha' => $_POST['senha']
-        ]
-    );
-    dump($resultado);
+    $email = $_POST['email'];
+    $senha = $_POST['senha'];
+
+    $usuario = $database->query(
+        "select * from usuarios
+    where email = :email
+    and senha = :senha",
+        null,
+        compact('email', 'senha')
+    )
+        ->fetch();
+
+    if ($usuario) {
+        $_SESSION['auth'] = $usuario;
+        $_SESSION['mensagem'] = 'Seja bem-vindo ' . $usuario['nome'] . '!';
+        header('location: /');
+        exit();
+    }
+
+
 }
 
-view('login');
+view('login', compact('mensagem'));
