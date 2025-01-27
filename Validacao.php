@@ -26,6 +26,24 @@ class Validacao
         return $validacao;
     }
 
+    private function unique($tabela, $campo, $valor){
+        if(strlen($valor)==0){
+            return ;
+        }
+
+        $db = new Database(config('database'));
+        $resultado = $db->query("
+        select * from $tabela where $campo = :valor
+        ",
+        null,
+        ['valor'=>$valor])
+        ->fetch();
+
+        if($resultado){
+            $this->validacoes[] = "O $campo já está sendo usado.";
+        }
+    }
+
     private function required($campo, $valor)
     {
         if (strlen($valor) == 0) {
@@ -68,9 +86,13 @@ class Validacao
         }
     }
 
-    public function naoPassou()
+    public function naoPassou($nomeCustomzado = null)
     {
-        $_SESSION['validacoes'] = $this->validacoes;
+        $chave = 'validacoes';
+        if($nomeCustomzado){
+            $chave .= '_'. $nomeCustomzado;
+        }
+        flash()->push($chave, $this->validacoes);
         return sizeof($this->validacoes) > 0;
     }
 }
