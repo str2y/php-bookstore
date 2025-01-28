@@ -20,13 +20,8 @@ class Database
         if ($driver == 'sqlite') {
             $dsn = $driver . ':' . $config['database'];
         }
-
         return $dsn;
     }
-
-    //@return array[Livro]
-
-    // Retorna todos os livros no banco de dados
 
     public function query($query, $class = null, $params = [])
     {
