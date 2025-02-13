@@ -18,14 +18,17 @@ class Livro
         return $database->query(
             "select
                 l.id, l.titulo, l.autor, l.descricao, l.ano_de_lancamento, l.imagem
-                , ifnull(round(sum(a.nota)/5.0), 0) as nota_avaliacao
                 , ifnull(count(a.id), 0) as count_avaliacoes
+                , ifnull(round(sum(a.nota)/count(a.id)), 0) as nota_avaliacao
             from
             livros l
             left join avaliacoes a on a.livro_id = l.id
             where $where
             group by l.id, l.titulo, l.autor, l.descricao, l.ano_de_lancamento, l.imagem
-        ", self::class, $params);
+        ",
+            self::class,
+            $params
+        );
     }
 
     public static function get($id)
